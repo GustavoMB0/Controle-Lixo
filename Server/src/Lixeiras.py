@@ -36,12 +36,12 @@ class Lixeira(Resource):
             existe = False
             for i in range(0, len(lixo)):
                 cl = lixo[i]
-                if (setorlixeira  == cl['setor']):
-                    if(lixeira['localizacao'] == cl['localizacao']):
-                        cl = {'setor': setorlixeira, 'localizacao': lixeira['localizacao'], 'capacidade': lixeira['capacidade'], 'ocupacao': lixeira['ocupacao']}
-                        existe = True
+                #if (setorlixeira  == cl['setor']):
+                if(lixeira['localizacao'] == cl['localizacao']):
+                    cl = {'localizacao': lixeira['localizacao'], 'capacidade': lixeira['capacidade'], 'ocupacao': lixeira['ocupacao']}
+                    existe = True
             if(not existe):
-                lixo.append( {'setor': setorlixeira, 'localizacao': lixeira['localizacao'], 'capacidade': lixeira['capacidade'], 'ocupacao': lixeira['ocupacao']})
+                lixo.append( {'localizacao': lixeira['localizacao'], 'capacidade': lixeira['capacidade'], 'ocupacao': lixeira['ocupacao']})
         return "1"
         
 

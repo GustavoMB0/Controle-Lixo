@@ -32,7 +32,7 @@ class Lixeira(object):
         client.loop_start()
 
     def getMqtt(self):
-        resposta = requests.get("http://192.168.144.140:1234/setor/" + self.setor)
+        resposta = requests.get("http://localhost:1234/setor/" + self.setor)
         client.connect(resposta.json()['ip'])
 
 

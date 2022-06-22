@@ -7,9 +7,13 @@ import json
 import requests
 from time import sleep
 
+
+#
+# Alterar myip e ip os ips correto atualmente funcional apenas no localhost
+#
 class Setor:
-    myip = "192.168.144.140"
-    ip = "192.168.144.140"
+    myip = "localhost"
+    ip = "localhost"
     name = ""
     message = ""
     lixeiras = []
@@ -26,7 +30,9 @@ class Setor:
             print("Entrou")
 
     def writeJson(self):
-        requests.post("http://"+ self.ip + ":1234/lixeira/" + self.name, json = json.dumps(self.lixeiras, default= lambda o: o.__dict__))
+        with open("test.json", "w") as out:
+            json.dump(self.lixeiras, out, default=lambda o: o.__dict__)
+        requests.post("http://"+ self.ip + ":1234/lixeira/" + self.name, json.dumps(self.lixeiras, default=lambda o: o.__dict__))
 
     def addLixeira(self, Lixeira):
         if sum(map(lambda x: x.localizacao == Lixeira.localizacao, self.lixeiras)) == 0:
