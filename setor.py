@@ -34,6 +34,9 @@ class Setor:
         message = {"nome" : self.name, "ip" : self.myip}
         print(message)
 
+    #Metodo para conectar e se comunicar com os outros setores
+    def connect(self):
+        self.c.connect()
 
     def listen(self):
         self.s.listen()
@@ -41,6 +44,14 @@ class Setor:
             conn, addr = self.s.accept()
             conn.settimeout(80)
             threading.Thread(target = self.listenToClient, args=(conn, addr)).start()
+
+    def listenToClient(self, conn, addr):
+        while True:
+            data = conn.recv(1024)
+            if data:
+                #
+                #Faz coisas
+                #
 
 
     def writeJson(self):
