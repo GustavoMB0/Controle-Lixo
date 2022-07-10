@@ -2,6 +2,7 @@ from concurrent.futures import thread
 from pickle import TRUE
 from pyclbr import Class
 import paho.mqtt.client as mqtt
+import re
 import json
 from time import sleep
 import socket
@@ -19,6 +20,7 @@ class Setor:
     myip = "localhost"
     ip = "localhost"
     name = ""
+    ocupado = False
     message = ""
     lixeiras = []
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -48,16 +50,42 @@ class Setor:
     def listenToClient(self, conn, addr):
         while True:
             data = conn.recv(1024)
-            if data:
-                #
-                #Faz coisas
-                #
+            conn, addr = self.s.accept()
+            if data == 'S':
+                if not self.ocupado:
+                    conn.sendall("L")
+                else:
+                    conn.sendall("O")
+            elif re.search("^L[0-9]+$", data):
+                nLixeira = int(data.split("L"))
+                conn.sendall(self.getLixeira(nLixeira))
+
+    def getLixeira(self, nLixeira):
+        listLixeira = []
+        if nLixeira <= self.lixeiras.count():
+            self.lixeiras.sort(key=lambda x: x.ocupacao,  reverse= True)
+            for i in range (0, nLixeira):
+                listLixeira.append(self.lixeiras[i])
+        #ANCHOR Tratar quando o setor não tiver o numero de lixeiras necessario    
+
+
+
+            
+        return json.dumps(listLixeira, default=lambda o: o.__dict__)
+
+
+            
+                
+
+
+
+                
 
 
     def writeJson(self):
         with open("test.json", "w") as out:
             json.dump(self.lixeiras, out, default=lambda o: o.__dict__)
-        
+    
 
     def addLixeira(self, Lixeira):
         if sum(map(lambda x: x.localizacao == Lixeira.localizacao, self.lixeiras)) == 0:
