@@ -1,38 +1,52 @@
+from concurrent.futures import thread
 from pickle import TRUE
 from pyclbr import Class
-from unicodedata import name
 import paho.mqtt.client as mqtt
-from flask import Flask
 import json
-import requests
 from time import sleep
-
+import socket
+from _thread import *
+import threading
 
 #
 # Alterar myip e ip os ips correto atualmente funcional apenas no localhost
 #
 class Setor:
+
+    HOST = "127.0.0.1"
+    SERVER = ""
+    PORT = "30" #Definir porta para conexão
     myip = "localhost"
     ip = "localhost"
     name = ""
     message = ""
     lixeiras = []
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def __init__(self, name):
         self.name = name
         self.sendMQtt()
+        self.s.bind(self.HOST, self.PORT)
+        threading.Thread(target= self.listen, args=(self.s)).start()
 
     def sendMQtt(self):
         message = {"nome" : self.name, "ip" : self.myip}
         print(message)
-        resposta = requests.post("http://"+ self.ip + ":1234/setor", json=message)
-        if resposta == -1:
-            print("Entrou")
+
+
+    def listen(self):
+        self.s.listen()
+        while True:
+            conn, addr = self.s.accept()
+            conn.settimeout(80)
+            threading.Thread(target = self.listenToClient, args=(conn, addr)).start()
+
 
     def writeJson(self):
         with open("test.json", "w") as out:
             json.dump(self.lixeiras, out, default=lambda o: o.__dict__)
-        requests.post("http://"+ self.ip + ":1234/lixeira/" + self.name, json.dumps(self.lixeiras, default=lambda o: o.__dict__))
+        
 
     def addLixeira(self, Lixeira):
         if sum(map(lambda x: x.localizacao == Lixeira.localizacao, self.lixeiras)) == 0:
@@ -42,11 +56,11 @@ class Setor:
         else:
             return -1
 
-
-        
-
     def esvazia(self):
-       resposta = requests("http://" + self.ip + ":1234/setor/" + self.name)        
+       resposta = requests("http://" + self.ip + ":1234/setor/" + self.name)
+    
+
+
 
     
 
