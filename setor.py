@@ -66,6 +66,12 @@ class Setor:
             self.lixeiras.sort(key=lambda x: x.ocupacao,  reverse= True)
             for i in range (0, nLixeira):
                 listLixeira.append(self.lixeiras[i])
+        else:
+            s=socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            lixeiraRestante = 'L'+ nLixeira - self.lixeiras.count()
+            s.sendto(lixeiraRestante,('255.255.255.255',12345))
+            
         #ANCHOR Tratar quando o setor não tiver o numero de lixeiras necessario    
 
 
