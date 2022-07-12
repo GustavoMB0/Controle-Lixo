@@ -57,10 +57,38 @@ class Setor:
                     conn.sendall("L")
                 else:
                     conn.sendall("O")
+            elif data == "k":
+                data = conn.recv(1024)
+                self.lixeiras.remove(data, key = lambda x: x.localizacao)
             elif re.source("name", data):
                 if not self.setores.count(data, key = lambda x: x.name):
                     self.setores.append(data)
-            elif re.search("^L[0-9]+$", data):
+            elif re.source("localizacao", data):
+                if not self.lixeiras.count(data, key = lambda x: x.localizacao):
+                    client.publish(self.ip+"/"+data.localizacao, "E")
+                    for setor in self.setores:
+                            c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                            c.connect(setor.ip, self.PORT)
+                            c.sendall("K")
+                            c.sendall(data)
+                            c.close()           
+                else:
+                    for x in self.setores:
+                        if(data.setor == x.nome):
+                            c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                            c.connect(x.ip, self.PORT)
+                            c.sendall(data)
+                            c.close()
+            elif data == "x":
+                data = conn.recv(1024)
+                for recebida in data:
+                    if not self.lixeiras.count(recebida, key = lambda x: x.localizacao):
+                        self.lixeiras.append(recebida)
+                    else:
+                        for i in range(0, self.lixeiras):
+                            if self.lixeiras[i].localizacao == recebida.localizacao:
+                                self.lixeiras[i] == recebida
+            elif re.search("^L[0-9]+$", data):#REVIEW mudar para mandar todas as lixeiras
                 nLixeira = int(data.split("L"))
                 conn.sendall(self.getLixeira(nLixeira))
 
@@ -70,8 +98,13 @@ class Setor:
         if nLixeira <= self.lixeiras.count():
             self.lixeiras.sort(key=lambda x: x.ocupacao,  reverse= True)
             for i in range (0, nLixeira):
-                listLixeira.append(self.lixeiras[i])
-
+                if self.lixeiras[i].setor != self.name:
+                    self.c.sendall('S')
+                    data  = self.c.recv(1024)
+                    if(data == "L"):
+                        listLixeira.append(self.lixeiras[i])
+                else:
+                    listLixeira.append(self.lixeiras[i])    
             
         #ANCHOR Tratar quando o setor não tiver o numero de lixeiras necessario 
         return json.dumps(listLixeira, default=lambda o: o.__dict__)
@@ -104,10 +137,15 @@ class Setor:
             return 1
         else:
             return -1
-  
-    def esvazia(self):
-       resposta = requests("http://" + self.ip + ":1234/setor/" + self.name)  #REVIEW Remover esse requests
-    
+    def sendLixeiras(self):
+        for x in self.setores:
+            if(data.setor == x.nome):
+                c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                c.connect(x.ip, self.PORT)
+                c.sendall("X")
+                c.sendall(self.lixeiras)
+                c.close()
+
 
 class Lixeira:
     travada = False

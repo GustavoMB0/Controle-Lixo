@@ -4,17 +4,8 @@ import paho.mqtt.client as mqtt
 import random
 
 
-def on_connect(client, userdata, flags, rc):
-    print("Conectou MQTT")
-    
 
-def on_message(client, userdata, msg):
-    print(msg.topic+" -  "+str(msg.payload))
 
-client = mqtt.Client()
-client.on_connect = on_connect
-client.on_message = on_message
-client.username_pw_set("mqtt", password="2314")
 
 class Lixeira(object):
     capacidade = 0
@@ -26,6 +17,8 @@ class Lixeira(object):
         self.capacidade = capacidade
         client.connect(mqtt)#ANCHOR mandar ip do setor via socket
         client.loop_start()
+        client.subscribe(mqtt+"/"+ localizacao)
+   
 
 
 
@@ -40,29 +33,26 @@ class Lixeira(object):
             if self.ocupacao < self.capacidade:
                 self.ocupacao += 10
                 self.changeState()
-    
 def main():
+    client = mqtt.Client()
+    client.on_message = on_message
+    client.username_pw_set("mqtt", password="2314")
     capacidade = int(input("Digite a capacidade da lixeira \n"))
     rua = input("Digite a rua da lixeira \n")
     mqtt = input("Insira o ip do setor\n")
 
     lixeira = Lixeira(capacidade, rua, mqtt)
+    def on_message(client, userdata, msg):
+        mensagem = msg.payload
+        mensagem = mensagem.decode()
+        if mensagem == "E":
+            lixeira.ocupacao = 0
     while(True):
         lixeira.encher()
 
 if __name__ == "__main__":
     main()
-    
-    #client.on_connect = on_connect
-    #client.on_message = on_message
-    #client.username_pw_set("hiago23rangel@gmail.com", password="2314")
 
-    # Conecta no MQTT Broker, no meu caso, o Maquiatto
-    #client.connect("www.maqiatto.com", 1883, 60)
-
-    #client.publish("hiago23rangel@gmail.com/luz1", "Oi, aqui é um teste")
-
-    # Inicia o loop
     
 
   

@@ -1,7 +1,7 @@
 1- TESTAR !!!!!!
-2- Caminhão escolher as lixeiras (caminhao)
-3- Esvaziar lixeiras (caminhao, setor e lixeira)
-4- Validar estado do setor no caminhão e no setor para outro setor (caminhao e setor)
-5- Enviar as listas para o caminhão (setor, caminhao)
-6- Apagar lixeiras vazias em outros setores (setor)
+V- 2- Caminhão escolher as lixeiras (caminhao)
+V- 3- Esvaziar lixeiras (caminhao, setor e lixeira)
+V- 4- Validar estado do setor no caminhão e no setor para outro setor (caminhao e setor)
+v- 5- Enviar as listas para o caminhão (setor, caminhao)
+V- 6- Apagar lixeiras vazias em outros setores (setor)
 7- ???

@@ -1,3 +1,6 @@
+from ast import Return
+from asyncio.windows_events import NULL
+from distutils.command.clean import clean
 import json
 from time import sleep
 from types import SimpleNamespace
@@ -6,6 +9,8 @@ import requests
 import socket
 from _thread import *
 import threading
+
+from setor import Lixeira
 
 class caminhao():
     ip = "" 
@@ -23,10 +28,9 @@ class caminhao():
         if data == 'L':
             self.c.sendall('L'+nLixeira)
             data = self.c.recv(1024)
-            return data            
-        else: 
-            print("O setor está ocupado, tente mais tarde")
-            #ANCHOR formatar metodo        
+            self.lixeiras.append(json.load(data))
+            return True             
+        return False
     
     def exibir(self):
         print("Lixeiras: \n")
@@ -34,33 +38,28 @@ class caminhao():
             lixeira = self.lixeiras[j]
             print(lixeira['setor'] + " " + lixeira['localizacao'] + ":  " + str(lixeira['ocupacao']) + "\n")
 
-    #Criar rota de caminhao
-    def readJson(self):
-        resposta = requests.get("http://" + self.ip + ":1234/caminhao")
-        self.lixeiras = resposta.json()
     
     #Criar rota de caminhao
     def esvaziar(self):
-        lixeira = []
-        if self.lixeiras.__len__() <= 1:
-            return 0
-        sleep(5)
-        lixeira = self.lixeiras.pop(0)
-        lixeira['ocupacao'] = 0
-        print(lixeira)
-        #ANCHOR fazer caminho de volta para esvaziar as lixeiras
-        #resposta = requests.post("http://" + self.ip + ":1234" + "/esvazia/"+ lixeira['setor'] , json=lixeira)
-        return resposta.status_code
-
+        self.lixeiras.sort(key=lambda x: x.ocupacao,  reverse= True)
+        for l in range(0, 5):
+            if(self.lixeiras[l] != NULL):
+                print(self.lixeiras[l])        
+                self.c.sendall(self.lixeiras[l])    
+                sleep(5)            
+        self.lixeiras = []
 if __name__ == '__main__':
     ip = input("Digite o ip: \n")
     caminhao = caminhao(ip)
-    print(caminhao.getLixeixa(5))
-
     while(True):
-        caminhao.readJson()
-        caminhao.exibir()
-        caminhao.esvaziar()
+        if(caminhao.getLixeixa(10)):
+            caminhao.esvaziar()            
+        else:
+            print("Aguardando setor...")
+            sleep(5)
+
+            
+
 
     
         
