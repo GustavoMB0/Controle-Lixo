@@ -3,6 +3,8 @@ from time import sleep
 import paho.mqtt.client as mqtt
 import random
 
+client = mqtt.Client()
+client.username_pw_set("mqtt", password="2314")
 
 
 
@@ -11,20 +13,21 @@ class Lixeira(object):
     capacidade = 0
     ocupacao = 0
     localizacao = ''
+    mqttip = ''
     
-    def __init__(self, capacidade, localizacao, mqtt):
+    def __init__(self, capacidade, localizacao, mqttip):
         self.localizacao = localizacao
         self.capacidade = capacidade
-        client.connect(mqtt)#ANCHOR mandar ip do setor via socket
+        client.connect(mqttip)#ANCHOR mandar ip do setor via socket
         client.loop_start()
-        client.subscribe(mqtt+"/"+ localizacao)
-   
+        client.subscribe(mqttip+"/"+ localizacao)
+        self.mqttip = mqttip
 
 
 
 
     def changeState(self):
-        client.publish(self.mqtt + "/" + self.localizacao,("{} {} {}".format(self.localizacao, self.capacidade, self.ocupacao)))
+        client.publish(self.mqttip + "/" + self.localizacao,("{} {} {}".format(self.localizacao, self.capacidade, self.ocupacao)))
     
     #Metodo para encher a lixeira aleatoriamente com o tempo, Testar tempo para encher e se o espaço dado entre os valores é suficiente
     def encher(self):
@@ -34,9 +37,7 @@ class Lixeira(object):
                 self.ocupacao += 10
                 self.changeState()
 def main():
-    client = mqtt.Client()
     client.on_message = on_message
-    client.username_pw_set("mqtt", password="2314")
     capacidade = int(input("Digite a capacidade da lixeira \n"))
     rua = input("Digite a rua da lixeira \n")
     mqtt = input("Insira o ip do setor\n")
