@@ -20,6 +20,7 @@ class Setor:
     ip = "localhost"
     setores = []
     name = ""
+    regex = re
     ocupado = False
     lixeiras = []
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -62,10 +63,10 @@ class Setor:
             elif data == "k":
                 data = conn.recv(1024)
                 self.lixeiras.remove(data, key = lambda x: x.localizacao)
-            elif re.source("name", data):
+            elif self.regex.source("name", data):
                 if not self.setores.count(data, key = lambda x: x.name):
                     self.setores.append(data)
-            elif re.source("localizacao", data):
+            elif self.regex.source("localizacao", data):
                 if not self.lixeiras.count(data, key = lambda x: x.localizacao):
                     client.publish(self.ip+"/"+data.localizacao, "E")
                     for setor in self.setores:
