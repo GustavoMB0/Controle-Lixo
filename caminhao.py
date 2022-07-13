@@ -25,13 +25,15 @@ class caminhao():
         self.c.sendall(msg)
         data  = self.c.recv(1024)
         data = data.decode()
-        print(data)
         if data == 'L':
-            msg = 'L'+nLixeira +"".encode()
+            msg = 'B'.encode()
             self.c.sendall(msg)
             data = self.c.recv(1024)
             data = data.decode()
-            self.lixeiras.append(json.load(data))
+            if data == "V" :
+                return False
+            print(data)
+            self.lixeiras.append(data)
             return True             
         return False
     
@@ -44,6 +46,7 @@ class caminhao():
     
     #Criar rota de caminhao
     def esvaziar(self):
+        print(self.lixeiras)
         self.lixeiras.sort(key=lambda x: x.ocupacao,  reverse= True)
         for l in range(0, 5):
             if(self.lixeiras[l] != NULL):

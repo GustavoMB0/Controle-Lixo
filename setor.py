@@ -55,7 +55,6 @@ class Setor:
             data = conn.recv(1024)
             data = data.decode()
             if data == 'S':
-                print("Chegou \n")
                 if not self.ocupado:
                     msg = "L".encode()
                     conn.sendall(msg)
@@ -94,28 +93,35 @@ class Setor:
                         for i in range(0, self.lixeiras):
                             if self.lixeiras[i].localizacao == recebida.localizacao:
                                 self.lixeiras[i] == recebida
-            elif self.regex.search("^L[0-9]+$", data):#REVIEW mudar para mandar todas as lixeiras
-                nLixeira = int(data.split("L"))
-                conn.sendall(self.getLixeira(nLixeira))
+            elif data == "B":
+                self.getLixeira(conn)
 
     #Pega as lixeiras para mandar para o caminhão
-    def getLixeira(self, nLixeira):
+    def getLixeira(self, conn):
         listLixeira = []
-        if nLixeira <= self.lixeiras.count():
+        if len(self.lixeiras) > 0:
             self.lixeiras.sort(key=lambda x: x.ocupacao,  reverse= True)
-            for i in range (0, nLixeira):
+            for i in range (0, len(self.lixeiras)):
                 if self.lixeiras[i].setor != self.name:
+                    c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    for x in self.setores:
+                        if(data.setor == x.nome):
+                            c.connect(x.ip, self.PORT)
                     msg = "S".encode()
-                    self.c.sendall(msg)
-                    data  = self.c.recv(1024)
+                    c.sendall(msg)
+                    data = c.recv(1024)
                     msg = data.decode()
+                    c.close()
                     if(data == "L"):
                         listLixeira.append(self.lixeiras[i])
                 else:
-                    listLixeira.append(self.lixeiras[i])    
-            
-        #ANCHOR Tratar quando o setor não tiver o numero de lixeiras necessario 
-        return json.dumps(listLixeira, default=lambda o: o.__dict__)
+                    listLixeira.append(self.lixeiras[i])
+            j = json.dumps(listLixeira, default=lambda o: o.__dict__)      
+            conn.send(j)
+        else:
+            msg = "V".encode()
+            conn.sendall(msg)
+ 
 
     def writeJson(self):
         with open("test.json", "w") as out:
@@ -163,10 +169,11 @@ class Lixeira:
     localizacao = ""
     setor = ""
 
-    def __init__(self, localizacao, capacidade, ocupacao):
+    def __init__(self, localizacao, capacidade, ocupacao, setor):
         self.capacidade = capacidade
         self.ocupacao = ocupacao
         self.localizacao = localizacao
+        self.setor = setor
         pass
 
 if __name__ == "__main__":
@@ -185,8 +192,7 @@ if __name__ == "__main__":
         msg = msg.decode()
         info = msg.split(" ")
         print(info[0])
-        lixeira = Lixeira(info[0], info[1], info[2])
-        lixeira.localizacao
+        lixeira = Lixeira(info[0], info[1], info[2], setor.name)
         if setor.addLixeira(lixeira) != 1:
             setor.gerenciaLixo(setor.lixeiras, 1, lixeira)
             setor.lixeiras.sort(key=lambda x: x.ocupacao,  reverse= True)
