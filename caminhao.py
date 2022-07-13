@@ -8,8 +8,10 @@ import threading
 from setor import Lixeira
 
 class caminhao():
+    nLixieras = 5
     ip = "" 
     lixeiras = []
+    recolher = []
     c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def __init__(self, ip):
@@ -19,23 +21,16 @@ class caminhao():
         
 
     
-    def getLixeixa(self, nLixeira):
-        msg = "S"
-        msg = msg.encode()
+    def getLixeixa(self):
+        msg = 'B'.encode()
         self.c.sendall(msg)
-        data  = self.c.recv(1024)
-        data = data.decode()
-        if data == 'L':
-            msg = 'B'.encode()
-            self.c.sendall(msg)
-            data = self.c.recv(1024)
-            data = data.decode()
-            if data == "V" :
-                return False
-            print(data)
-            self.lixeiras.append(data)
-            return True             
-        return False
+        data = self.c.recv(1024)
+        data = data.decode("utf-8")
+        j = json.loads(data)
+        if data == "V" :
+            return False
+        self.lixeiras.append(j)
+        return True             
     
     def exibir(self):
         print("Lixeiras: \n")
@@ -43,24 +38,58 @@ class caminhao():
             lixeira = self.lixeiras[j]
             print(lixeira['setor'] + " " + lixeira['localizacao'] + ":  " + str(lixeira['ocupacao']) + "\n")
 
-    
-    #Criar rota de caminhao
-    def esvaziar(self):
-        print(self.lixeiras)
+    def escolhe(self):
+        lixeira = []
+        msg = ""
         self.lixeiras.sort(key=lambda x: x.ocupacao,  reverse= True)
-        for l in range(0, 5):
-            if(self.lixeiras[l] != NULL):
-                print(self.lixeiras[l])        
-                self.c.sendall(self.lixeiras[l])    
-                sleep(5)            
-        self.lixeiras = []
+        for i in range(0, self.nLixeiras):
+            if self.lixeiras != None:
+                if self.lixeiras[i].travada == True:
+                    self.lixeiras.pop(i)
+                    i = i-1
+                else:
+                    lixeira = self.lixeiras.pop(0)
+            else:
+                break
+        self.recolher = lixeira
+        msg = "S".encode("utf-8")
+        self.c.sendall(msg)
+        data = self.c.recv(1024)
+        data = data.decode("utf-8")
+        if data == 'L':
+            msg = "V".encode("utf-8")
+            self.c.sendall(msg)
+            j = json.dumps(self.lixeiras, default= lambda o: o.__dict__)
+            self.c.sendall(j.encode("utf-8"))
+            data = self.c.recv(1024)
+            data = data.decode("utf-8")
+            if data == "O":
+                return True
+            else:
+                return False
+
+
+
+
+    #Esvazia as lixeiras
+    def esvaziar(self):
+        self.exibir()
+        for lixeira in self.esvaziar:
+            if self.esvaziar != None:
+                print(lixeira)
+                j = json.dumps(lixeira, default= lambda o: o.__dict__)
+                self.c.sendall(j.encode())
+                sleep(5)
+
 
 if __name__ == '__main__':
     ip = input("Digite o ip: \n")
     caminhao = caminhao(ip)
     while(True):
-        if(caminhao.getLixeixa(10)):
-            caminhao.esvaziar()            
+        caminhao.getLixeixa()
+        if(caminhao.escolhe()):
+            caminhao.esvaziar() 
+            print("")           
         else:
             print("Aguardando setor...")
             sleep(5)

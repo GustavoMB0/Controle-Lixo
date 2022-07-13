@@ -53,15 +53,62 @@ class Setor:
     def listenToClient(self, conn, addr):
         while True:
             data = conn.recv(1024)
-            data = data.decode()
+            data = data.decode("utf-8")
             if data == 'S':
                 if not self.ocupado:
-                    msg = "L".encode()
+                    msg = "L".encode("utf-8")
                     conn.sendall(msg)
+                    data = conn.recv(1024)
+                    data = data.decode("utf-8")
+                    if data == "V" and self.ocupado == True:
+                        t = 0
+                        self.ocupado = True
+                        data = conn.recv(1024)
+                        data = data.decode("utf-8")
+                        j = json.loads(data)
+                        for lixeira in j:
+                            if lixeira.travada == True:
+                                msg = "T".encode("utf-8")
+                                conn.sendall(msg)
+                                ja = json.dumps(lixeira, defalut = lambda o:o.__dict__)
+                                conn.sendall(ja.encode())
+                                break
+                            if lixeira.setor != self.name:
+                                for setor in self.setores:
+                                    if setor.name == lixeira.setor:
+                                        c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                                        c.connect(setor.ip, self.PORT)
+                                        msg = "S".encode()
+                                        c.sendall(msg)
+                                        data  = c.recv(1024)
+                                        data = data.decode("utf-8")
+                                        if data == 'L':
+                                            msg = "V".encode()
+                                            c.sendall(msg)
+                                            jl = json.dumps(lixeira, default= lambda o: o.__dict__)
+                                            c.sendall(jl)
+                                            j.pop(t)
+                                        else:
+                                            t = t+1
+                                            break
+                            else:
+                                for li in self.lixeiras:
+                                    if lixeira.localizacao == li.localizacao:
+                                        li.travada = True
+                                        j.pop(t)
+                            if j == None:
+                                msg = "O".encode("utf-8")
+                                conn.sendall(msg)
+                            else:
+                                j = json.dumps(j, default= lambda o: o.__dict__)
+                                conn.sendall(j)
+                    else: 
+                        msg = "W".encode("utf-8")
+                        conn.sendall(msg)
                 else:
-                    msg = "O".encode()
+                    msg = "O".encode("utf-8")
                     conn.sendall(msg)
-            elif data == "k":
+            elif data == "K":
                 data = conn.recv(1024)
                 self.lixeiras.remove(data, key = lambda x: x.localizacao)
             elif self.regex.search("name", data):
@@ -73,7 +120,7 @@ class Setor:
                     for setor in self.setores:
                             c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                             c.connect(setor.ip, self.PORT)
-                            msg = "K".encode()
+                            msg = "K".encode("utf-8")
                             c.sendall(msg)
                             c.sendall(data)
                             c.close()           
@@ -107,19 +154,19 @@ class Setor:
                     for x in self.setores:
                         if(data.setor == x.nome):
                             c.connect(x.ip, self.PORT)
-                    msg = "S".encode()
+                    msg = "S".encode("utf-8")
                     c.sendall(msg)
                     data = c.recv(1024)
-                    msg = data.decode()
+                    msg = data.decode("utf-8")
                     c.close()
                     if(data == "L"):
                         listLixeira.append(self.lixeiras[i])
                 else:
                     listLixeira.append(self.lixeiras[i])
             j = json.dumps(listLixeira, default=lambda o: o.__dict__)      
-            conn.send(j)
+            conn.sendall(j.encode("utf-8"))
         else:
-            msg = "V".encode()
+            msg = "V".encode("utf-8")
             conn.sendall(msg)
  
 
@@ -138,10 +185,10 @@ class Setor:
             #Alterar o estado para travada
             for i in lixeiras:
                 if i.name == Lixeira.name:
-                    if not i.travado:
-                        i.travado == True
+                    if not i.travada:
+                        i.travada == True
                     else:
-                        i.travado == False
+                        i.travada == False
 
 
     def addLixeira(self, Lixeira):
@@ -156,7 +203,7 @@ class Setor:
         for x in self.setores:
             c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             c.connect(x.ip, self.PORT)
-            msg = "X".encode()
+            msg = "X".encode("utf-8")
             c.sendall(msg)
             c.sendall(self.lixeiras)
             c.close()
@@ -189,7 +236,7 @@ if __name__ == "__main__":
     def on_message(client, userdata, message):
         info = ""
         msg = message.payload
-        msg = msg.decode()
+        msg = msg.decode("utf-8")
         info = msg.split(" ")
         print(info[0])
         lixeira = Lixeira(info[0], info[1], info[2], setor.name)
