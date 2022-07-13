@@ -27,6 +27,7 @@ class Setor:
     def __init__(self, name):
         self.name = name
         self.sendMQtt()
+        self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.s.bind((self.HOST, self.PORT))
         threading.Thread(target= self.listen, args=()).start()
 
@@ -193,6 +194,13 @@ if __name__ == "__main__":
     client.username_pw_set("mqtt", password="2314")
     client.connect("localhost")
     client.loop_forever()
-    while(True):     
-       setor.esvazia()
-       sleep(1)
+    
+    try:
+        while(True):     
+            setor.esvazia()
+            sleep(1)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        setor.s.close()
+    
