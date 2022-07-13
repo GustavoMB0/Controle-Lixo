@@ -5,29 +5,26 @@ import random
 
 
 
-client = mqtt.Client()
-client.username_pw_set("mqtt", password="2314")
+
 
 class Lixeira(object):
     capacidade = 0
     ocupacao = 0
     localizacao = ''
-    mqttip = ''
     
-    def __init__(self, capacidade, localizacao, mqttip):
+    def __init__(self, capacidade, localizacao, mqtt):
         self.localizacao = localizacao
         self.capacidade = capacidade
-        self.mqttip = mqttip
-        client.subscribe(mqttip+"/"+ localizacao)
-        client.connect(mqttip)#ANCHOR mandar ip do setor via socket
+        client.connect(mqtt)#ANCHOR mandar ip do setor via socket
         client.loop_start()
-    
+        client.subscribe(mqtt+"/"+ localizacao)
+   
 
 
 
 
     def changeState(self):
-        client.publish(self.mqttip + "/" + self.localizacao,("{} {} {}".format(self.localizacao, self.capacidade, self.ocupacao)))
+        client.publish(self.mqtt + "/" + self.localizacao,("{} {} {}".format(self.localizacao, self.capacidade, self.ocupacao)))
     
     #Metodo para encher a lixeira aleatoriamente com o tempo, Testar tempo para encher e se o espaço dado entre os valores é suficiente
     def encher(self):
@@ -36,19 +33,20 @@ class Lixeira(object):
             if self.ocupacao < self.capacidade:
                 self.ocupacao += 10
                 self.changeState()
-
 def main():
-    
+    client = mqtt.Client()
+    client.on_message = on_message
+    client.username_pw_set("mqtt", password="2314")
+    capacidade = int(input("Digite a capacidade da lixeira \n"))
+    rua = input("Digite a rua da lixeira \n")
+    mqtt = input("Insira o ip do setor\n")
+
+    lixeira = Lixeira(capacidade, rua, mqtt)
     def on_message(client, userdata, msg):
         mensagem = msg.payload
         mensagem = mensagem.decode()
         if mensagem == "E":
             lixeira.ocupacao = 0
-    capacidade = int(input("Digite a capacidade da lixeira \n"))
-    rua = input("Digite a rua da lixeira \n")
-    mqttip = input("Insira o ip do setor\n")
-    client.on_message = on_message
-    lixeira = Lixeira(capacidade, rua, mqttip)
     while(True):
         lixeira.encher()
 
