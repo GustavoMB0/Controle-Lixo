@@ -28,8 +28,8 @@ class caminhao():
         data = data.decode("utf-8")
         j = json.loads(data)
         if data == "V" :
-            return False
-        self.lixeiras.append(j)
+            return False 
+        self.lixeiras = j
         return True             
     
     def exibir(self):
@@ -39,24 +39,25 @@ class caminhao():
             print(lixeira['setor'] + " " + lixeira['localizacao'] + ":  " + str(lixeira['ocupacao']) + "\n")
 
     def escolhe(self):
+        print("Começou a escolher")
         lixeira = []
         msg = ""
-        self.lixeiras.sort(key=lambda x: x.ocupacao,  reverse= True)
-        for i in range(0, self.nLixeiras):
-            if self.lixeiras != None:
-                if self.lixeiras[i].travada == True:
-                    self.lixeiras.pop(i)
-                    i = i-1
-                else:
-                    lixeira = self.lixeiras.pop(0)
+        self.lixeiras.sort(key=lambda x: x['ocupacao'],  reverse= True)
+        for i in range(0, self.nLixieras):
+            if len(self.lixeiras[i]) == 0:
+                print(self.lixeiras)
+                lixeira = self.lixeiras.pop(0)
             else:
                 break
         self.recolher = lixeira
+        print("Definiu as lixeiras:")
+        print(self.recolher)
         msg = "S".encode("utf-8")
         self.c.sendall(msg)
         data = self.c.recv(1024)
         data = data.decode("utf-8")
         if data == 'L':
+            print('Setor livre')
             msg = "V".encode("utf-8")
             self.c.sendall(msg)
             j = json.dumps(self.lixeiras, default= lambda o: o.__dict__)
@@ -64,6 +65,7 @@ class caminhao():
             data = self.c.recv(1024)
             data = data.decode("utf-8")
             if data == "O":
+                print("Começa a coleta")
                 return True
             else:
                 return False
