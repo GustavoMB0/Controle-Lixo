@@ -42,6 +42,11 @@ def main():
         mensagem = mensagem.decode()
         if mensagem == "E":
             lixeira.ocupacao = 0
+    
+    def on_connect(client, userdata, msg):
+        print("Conectou mqtt")
+    
+    client.on_conenct = on_connect
     client.on_message = on_message
     capacidade = int(input("Digite a capacidade da lixeira \n"))
     rua = input("Digite a rua da lixeira \n")

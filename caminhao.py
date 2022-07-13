@@ -20,11 +20,11 @@ class caminhao():
 
     
     def getLixeixa(self, nLixeira):
-        print("Chegou aqui")
         msg = "S"
         msg = msg.encode()
         self.c.sendall(msg)
         data  = self.c.recv(1024)
+        print("Chegou aqui")
         data = data.decode()
         print(data)
         if data == 'L':

@@ -63,10 +63,10 @@ class Setor:
             elif data == "k":
                 data = conn.recv(1024)
                 self.lixeiras.remove(data, key = lambda x: x.localizacao)
-            elif self.regex.source("name", data):
+            elif self.regex.search("name", data):
                 if not self.setores.count(data, key = lambda x: x.name):
                     self.setores.append(data)
-            elif self.regex.source("localizacao", data):
+            elif self.regex.search("localizacao", data):
                 if not self.lixeiras.count(data, key = lambda x: x.localizacao):
                     client.publish(self.ip+"/"+data.localizacao, "E")
                     for setor in self.setores:
@@ -91,7 +91,7 @@ class Setor:
                         for i in range(0, self.lixeiras):
                             if self.lixeiras[i].localizacao == recebida.localizacao:
                                 self.lixeiras[i] == recebida
-            elif re.search("^L[0-9]+$", data):#REVIEW mudar para mandar todas as lixeiras
+            elif self.regex.search("^L[0-9]+$", data):#REVIEW mudar para mandar todas as lixeiras
                 nLixeira = int(data.split("L"))
                 conn.sendall(self.getLixeira(nLixeira))
 
@@ -178,6 +178,7 @@ if __name__ == "__main__":
         msg = message.payload
         msg = msg.decode()
         info = msg.split(" ")
+        print(info + "\n")
         lixeira = Lixeira(info[0], info[1], info[2])
         lixeira.localizacao
         if setor.addLixeira(lixeira) != 1:
@@ -194,7 +195,7 @@ if __name__ == "__main__":
     client.on_connect = on_connect
     client.on_message = on_message
     client.username_pw_set("mqtt", password="2314")
-    client.connect("localhost")
+    client.connect("25.81.87.101")
     client.loop_forever()
     
     try:
