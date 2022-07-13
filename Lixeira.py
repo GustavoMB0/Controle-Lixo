@@ -37,17 +37,17 @@ class Lixeira(object):
                 self.ocupacao += 10
                 self.changeState()
 def main():
+    def on_message(client, userdata, msg):
+        mensagem = msg.payload
+        mensagem = mensagem.decode()
+        if mensagem == "E":
+            lixeira.ocupacao = 0
     client.on_message = on_message
     capacidade = int(input("Digite a capacidade da lixeira \n"))
     rua = input("Digite a rua da lixeira \n")
     mqtt = input("Insira o ip do setor\n")
 
     lixeira = Lixeira(capacidade, rua, mqtt)
-    def on_message(client, userdata, msg):
-        mensagem = msg.payload
-        mensagem = mensagem.decode()
-        if mensagem == "E":
-            lixeira.ocupacao = 0
     while(True):
         lixeira.encher()
 
