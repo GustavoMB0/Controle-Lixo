@@ -14,7 +14,7 @@ import threading
 #
 class Setor:
 
-    HOST = '127.0.0.1'
+    HOST = 'localhost'
     PORT = 30 #REVIEW Definir porta para conexão
     myip = "localhost" #REVIEW botar o ip da maquina na rede
     ip = "localhost"
@@ -51,8 +51,9 @@ class Setor:
 
     def listenToClient(self, conn, addr):
         while True:
-            data = conn.recv(1024)
             conn, addr = self.s.accept()
+            data = conn.recv(1024)
+            data = data.decode()
             if data == 'S':
                 if not self.ocupado:
                     conn.sendall("L")

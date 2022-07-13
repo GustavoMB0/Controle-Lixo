@@ -1,11 +1,6 @@
-from ast import Return
-from asyncio.windows_events import NULL
-from distutils.command.clean import clean
 import json
 from time import sleep
 from types import SimpleNamespace
-import asyncio
-import requests
 import socket
 from _thread import *
 import threading
@@ -20,11 +15,18 @@ class caminhao():
     def __init__(self, ip):
         self.ip = ip
         print("Caminhao inicializado")
-        threading.Thread(target= self.listen, args=(self.s)).start()
+        self.c.connect((ip, 30))
+        
+
     
     def getLixeixa(self, nLixeira):
-        self.c.sendall('S')
+        print("Chegou aqui")
+        msg = "S"
+        msg = msg.encode()
+        self.c.sendall(msg)
         data  = self.c.recv(1024)
+        data = data.decode()
+        print(data)
         if data == 'L':
             self.c.sendall('L'+nLixeira)
             data = self.c.recv(1024)
@@ -48,6 +50,7 @@ class caminhao():
                 self.c.sendall(self.lixeiras[l])    
                 sleep(5)            
         self.lixeiras = []
+
 if __name__ == '__main__':
     ip = input("Digite o ip: \n")
     caminhao = caminhao(ip)
