@@ -24,12 +24,13 @@ class caminhao():
         msg = msg.encode()
         self.c.sendall(msg)
         data  = self.c.recv(1024)
-        print("Chegou aqui")
         data = data.decode()
         print(data)
         if data == 'L':
-            self.c.sendall('L'+nLixeira)
+            msg = 'L'+nLixeira +"".encode()
+            self.c.sendall(msg)
             data = self.c.recv(1024)
+            data = data.decode()
             self.lixeiras.append(json.load(data))
             return True             
         return False

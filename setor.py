@@ -14,9 +14,9 @@ import threading
 #
 class Setor:
 
-    HOST = 'localhost'
+    HOST = '25.81.87.101' #ANCHOR TROCAR O IP PARA O DA DO HAMACHI PARA USAR EM REDE LOCAL
     PORT = 30 #REVIEW Definir porta para conexão
-    myip = "localhost" #REVIEW botar o ip da maquina na rede
+    myip = "25.81.87.101" #REVIEW botar o ip da maquina na rede
     ip = "localhost"
     setores = []
     name = ""
@@ -52,14 +52,16 @@ class Setor:
 
     def listenToClient(self, conn, addr):
         while True:
-            conn, addr = self.s.accept()
             data = conn.recv(1024)
             data = data.decode()
             if data == 'S':
+                print("Chegou \n")
                 if not self.ocupado:
-                    conn.sendall("L")
+                    msg = "L".encode()
+                    conn.sendall(msg)
                 else:
-                    conn.sendall("O")
+                    msg = "O".encode()
+                    conn.sendall(msg)
             elif data == "k":
                 data = conn.recv(1024)
                 self.lixeiras.remove(data, key = lambda x: x.localizacao)
@@ -68,11 +70,12 @@ class Setor:
                     self.setores.append(data)
             elif self.regex.search("localizacao", data):
                 if not self.lixeiras.count(data, key = lambda x: x.localizacao):
-                    client.publish(self.ip+"/"+data.localizacao, "E")
+                    client.publish("/"+data.localizacao, "E")
                     for setor in self.setores:
                             c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                             c.connect(setor.ip, self.PORT)
-                            c.sendall("K")
+                            msg = "K".encode()
+                            c.sendall(msg)
                             c.sendall(data)
                             c.close()           
                 else:
@@ -102,8 +105,10 @@ class Setor:
             self.lixeiras.sort(key=lambda x: x.ocupacao,  reverse= True)
             for i in range (0, nLixeira):
                 if self.lixeiras[i].setor != self.name:
-                    self.c.sendall('S')
+                    msg = "S".encode()
+                    self.c.sendall(msg)
                     data  = self.c.recv(1024)
+                    msg = data.decode()
                     if(data == "L"):
                         listLixeira.append(self.lixeiras[i])
                 else:
@@ -145,7 +150,8 @@ class Setor:
         for x in self.setores:
             c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             c.connect(x.ip, self.PORT)
-            c.sendall("X")
+            msg = "X".encode()
+            c.sendall(msg)
             c.sendall(self.lixeiras)
             c.close()
 
@@ -170,7 +176,7 @@ if __name__ == "__main__":
 
     def on_connect(client, userdata, flags, rc):
         print("Conectou MQTT")
-        client.subscribe(setor.name + "/#", 1)
+        client.subscribe("/#", 1)
     
 
     def on_message(client, userdata, message):
@@ -178,7 +184,7 @@ if __name__ == "__main__":
         msg = message.payload
         msg = msg.decode()
         info = msg.split(" ")
-        print(info + "\n")
+        print(info[0])
         lixeira = Lixeira(info[0], info[1], info[2])
         lixeira.localizacao
         if setor.addLixeira(lixeira) != 1:
