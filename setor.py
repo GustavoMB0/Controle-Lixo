@@ -28,7 +28,7 @@ class Setor:
         self.name = name
         self.sendMQtt()
         self.s.bind((self.HOST, self.PORT))
-        threading.Thread(target= self.listen, args=(self.s)).start()
+        threading.Thread(target= self.listen, args=()).start()
 
     def sendMQtt(self):
         message = {"nome" : self.name, "ip" : self.myip}
@@ -137,14 +137,14 @@ class Setor:
             return 1
         else:
             return -1
+
     def sendLixeiras(self):
         for x in self.setores:
-            if(data.setor == x.nome):
-                c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                c.connect(x.ip, self.PORT)
-                c.sendall("X")
-                c.sendall(self.lixeiras)
-                c.close()
+            c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            c.connect(x.ip, self.PORT)
+            c.sendall("X")
+            c.sendall(self.lixeiras)
+            c.close()
 
 
 class Lixeira:
