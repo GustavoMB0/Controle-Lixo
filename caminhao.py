@@ -89,12 +89,13 @@ if __name__ == '__main__':
     caminhao = caminhao(ip)
     while(True):
         caminhao.getLixeixa()
-        caminhao.escolhe()
-        print("Esvaziando")
-        caminhao.esvaziar()            
-       # else:
-        #    print("Aguardando setor...")
-        #    sleep(10)
+        if(caminhao.escolhe()):
+            print("Esvaziando")
+            caminhao.esvaziar() 
+            print("")           
+        else:
+            print("Aguardando setor...")
+            sleep(10)
 
             
 
