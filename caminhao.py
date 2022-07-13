@@ -76,12 +76,12 @@ class caminhao():
     #Esvazia as lixeiras
     def esvaziar(self):
         self.exibir()
-        for lixeira in self.esvaziar:
-            if self.esvaziar != None:
-                print(lixeira)
+        for lixeira in self.recolher:
+            if self.recolher != None:
+                self.c.sendall("Z".encode())
                 j = json.dumps(lixeira, default= lambda o: o.__dict__)
                 self.c.sendall(j.encode())
-                sleep(5)
+                sleep(10)
 
 
 if __name__ == '__main__':
@@ -89,12 +89,12 @@ if __name__ == '__main__':
     caminhao = caminhao(ip)
     while(True):
         caminhao.getLixeixa()
-        if(caminhao.escolhe()):
-            caminhao.esvaziar() 
-            print("")           
-        else:
-            print("Aguardando setor...")
-            sleep(5)
+        caminhao.escolhe()
+        print("Esvaziando")
+        caminhao.esvaziar()            
+       # else:
+        #    print("Aguardando setor...")
+        #    sleep(10)
 
             
 

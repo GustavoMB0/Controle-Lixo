@@ -52,8 +52,10 @@ class Setor:
 
     def listenToClient(self, conn, addr):
         while True:
+            print("Aguardando mensagem")
             data = conn.recv(1024)
             data = data.decode("utf-8")
+            print(data)
             if data == 'S':
                 if not self.ocupado:
                     print("Verificando disponiblidade")
@@ -68,33 +70,29 @@ class Setor:
                         data = conn.recv(1024)
                         data = data.decode("utf-8")
                         j = json.loads(data)
-                        for lixeira in j:
-                            print("Verificando disponibilidade da lixeira")                   
+                        aux = False
+                        for i in range(0, len(j)-1):
+                            print("Verificando disponibilidade da lixeira")
+                            print(i)                
                             for test in self.lixeiras:
-                                print(lixeira['localizacao'] == test.localizacao)
-                                if  test.localizacao == lixeira['localizacao'] and test.travada == True:
+                                if  test.localizacao == j[i]['localizacao'] and test.travada == True:
                                     print("Lixeira indisponivel")
                                     msg = "T".encode("utf-8")
                                     conn.sendall(msg)
-                                    ja = json.dumps(lixeira, defalut = lambda o:o.__dict__)
+                                    ja = json.dumps(j[i], defalut = lambda o:o.__dict__)
                                     conn.sendall(ja.encode())
+                                    aux = True
                                     break
-                                elif test.localizacao == lixeira['localizacao'] and test.travada == False:
-                                    print("Lixeira disponvivel")    
-                                    print(lixeira)
+                                if test.localizacao == j[i]['localizacao'] and test.travada == False:
+                                    print("Lixeira disponvivel")
                                     for li in self.lixeiras:
-                                        if lixeira['localizacao'] == li.localizacao:
+                                        if j[i]['localizacao'] == li.localizacao:
                                             print("Travando lixeira")
-                                            li.travada = True
-                                            j.remove(lixeira)
-                                            break
-                                else:
-                                    print(lixeira)
-                                    print("Lixeira Diferente")    
-                            if lixeira['setor'] != self.name:
+                                            li.travada = True       
+                            if j[i]['setor'] != self.name:
                                 print("Perguntando a outro setor")
                                 for setor in self.setores:
-                                    if setor.name == lixeira['setor']:
+                                    if setor.name == j[i]['setor']:
                                         c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                                         c.connect(setor.ip, self.PORT)
                                         msg = "S".encode()
@@ -104,14 +102,13 @@ class Setor:
                                         if data == 'L':
                                             msg = "V".encode()
                                             c.sendall(msg)
-                                            jl = json.dumps(lixeira, default= lambda o: o.__dict__)
+                                            jl = json.dumps(j[i], default= lambda o: o.__dict__)
                                             c.sendall(jl)
-                                            j.pop(0)
                                         else:
                                             print('aqui')
                                             break
                             
-                        if j == None:
+                        if not aux:
                             print("Todas as lixeiras disponiveis")
                             msg = "O".encode("utf-8")
                             conn.sendall(msg)
@@ -134,10 +131,12 @@ class Setor:
                 if not self.setores.count(j[0], key = lambda x: x.name):
                     print("Novo setor adicionado")
                     self.setores.append(data)
-            elif self.regex.search("localizacao", data):
+            elif data == "Z":
+                data = conn.recv(1024)
+                data = data.decode("utf-8")
                 j = json.loads(data)
                 print(j)
-                if not self.lixeiras.count(j):   
+                if  self.name == j['setor']:   
                     print("Esvaziando lixeira")                 
                     client.publish("/"+j['localizacao'], "E")
                     self.lixeiras[self.lixeiras.index(j)].travada = False
@@ -268,7 +267,7 @@ if __name__ == "__main__":
             setor.lixeiras.sort(key=lambda x: x.ocupacao,  reverse= True)
             if len(setor.lixeiras) > 2:
                 #Lixeira(100, 50) Lixeira(100, 45) Lixeira(80, 40)
-                if setor.lixeiras[2].ocupacao >= setor.lixeiras[2].capacacidade/2:
+                if setor.lixeiras[2].ocupacao >= setor.lixeiras[2].capacidade/2:
                     setor.sendLixeiras()
         setor.writeJson()
 
