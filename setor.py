@@ -69,11 +69,9 @@ class Setor:
                         data = data.decode("utf-8")
                         j = json.loads(data)
                         for lixeira in j:
-                            print(lixeira)
-                            print("Verificando disponibilidade da lixeira")                            
+                            print("Verificando disponibilidade da lixeira")                   
                             for test in self.lixeiras:
                                 print(lixeira['localizacao'] == test.localizacao)
-                                print(test.travada)
                                 if  test.localizacao == lixeira['localizacao'] and test.travada == True:
                                     print("Lixeira indisponivel")
                                     msg = "T".encode("utf-8")
@@ -134,6 +132,7 @@ class Setor:
             elif self.regex.search("name", data):
                 j = json.loads(data)
                 if not self.setores.count(j[0], key = lambda x: x.name):
+                    print("Novo setor adicionado")
                     self.setores.append(data)
             elif self.regex.search("localizacao", data):
                 j = json.loads(data)
@@ -269,7 +268,7 @@ if __name__ == "__main__":
             setor.lixeiras.sort(key=lambda x: x.ocupacao,  reverse= True)
             if len(setor.lixeiras) > 2:
                 #Lixeira(100, 50) Lixeira(100, 45) Lixeira(80, 40)
-                if setor.lixeiras(2).ocupacao >= setor.lixeiras(2).capacacidade/2:
+                if setor.lixeiras[2].ocupacao >= setor.lixeiras[2].capacacidade/2:
                     setor.sendLixeiras()
         setor.writeJson()
 
