@@ -27,7 +27,7 @@ class Lixeira(object):
 
 
     def changeState(self):
-        client.publish(self.mqttip + "/" + self.localizacao,("{} {} {}".format(self.localizacao, self.capacidade, self.ocupacao)))
+        client.publish("/" + self.localizacao,("{} {} {}".format(self.localizacao, self.capacidade, self.ocupacao)))
     
     #Metodo para encher a lixeira aleatoriamente com o tempo, Testar tempo para encher e se o espaço dado entre os valores é suficiente
     def encher(self):
